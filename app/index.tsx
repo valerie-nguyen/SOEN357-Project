@@ -850,7 +850,11 @@ export default function MapScreen() {
                     key={segment} 
                     style={[
                       styles.levelSegment, 
-                      { backgroundColor: segment <= (selectedPlace.score || 3) ? '#6B9E78' : '#DCE9E0' }
+                      { 
+                        backgroundColor: segment <= (selectedPlace.score || 3) 
+                          ? (selectedPlace.level === 'Quiet' ? '#6B9E78' : selectedPlace.level === 'Moderate' ? '#F0B361' : '#F47C7C') 
+                          : (selectedPlace.level === 'Quiet' ? '#DCE9E0' : selectedPlace.level === 'Moderate' ? '#FFE8C4' : '#FCD0D0')
+                      }
                     ]} 
                   />
                 ))}
