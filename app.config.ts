@@ -80,5 +80,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   extra: {
     ...(config.extra ?? {}),
     googleMapsApiConfigured: true,
+    googleMapsApiKey,
   },
 });
