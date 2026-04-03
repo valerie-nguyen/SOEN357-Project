@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Animated, Dimensions, PanResponder, Keyboard, Linking } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Dimensions, Keyboard, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -267,6 +267,8 @@ export default function MapScreen() {
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const fadeSearchAnim = useRef(new Animated.Value(0)).current;
+  const [isFilterModalMounted, setIsFilterModalMounted] = useState(false);
+  const filterModalAnim = useRef(new Animated.Value(0)).current;
 
   // --- SEARCH LOGIC ---
   useEffect(() => {
@@ -276,6 +278,29 @@ export default function MapScreen() {
       useNativeDriver: true,
     }).start();
   }, [isSearchActive, fadeSearchAnim]);
+
+  useEffect(() => {
+    if (showFilters) {
+      setIsFilterModalMounted(true);
+      Animated.spring(filterModalAnim, {
+        toValue: 1,
+        tension: 80,
+        friction: 10,
+        useNativeDriver: true,
+      }).start();
+      return;
+    }
+
+    Animated.timing(filterModalAnim, {
+      toValue: 0,
+      duration: 160,
+      useNativeDriver: true,
+    }).start(({ finished }) => {
+      if (finished) {
+        setIsFilterModalMounted(false);
+      }
+    });
+  }, [showFilters, filterModalAnim]);
 
   const toggleLevel = (level: string) => {
     setSelectedLevels(prev => 
@@ -694,8 +719,30 @@ export default function MapScreen() {
             </TouchableOpacity>
 
             {/* Filter Modal Overlay */}
-            {showFilters && (
-              <View style={styles.filterModal}>
+            {isFilterModalMounted && (
+              <Animated.View
+                pointerEvents={showFilters ? 'auto' : 'none'}
+                style={[
+                  styles.filterModal,
+                  {
+                    opacity: filterModalAnim,
+                    transform: [
+                      {
+                        translateY: filterModalAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [-8, 0],
+                        }),
+                      },
+                      {
+                        scale: filterModalAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0.96, 1],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
                 <TouchableOpacity style={styles.closeIcon} onPress={() => setShowFilters(false)}>
                   <Ionicons name="close" size={20} color="#555" />
                 </TouchableOpacity>
@@ -703,7 +750,10 @@ export default function MapScreen() {
                 {/* Section: Quietness Level */}
                 <View style={styles.filterSection}>
                   <View style={[styles.filterLabelPill, { backgroundColor: '#E8F5E9' }]}>
-                    <Text style={[styles.filterLabelText, { color: '#2E7D32' }]}>Quietness level 🔇</Text>
+                    <View style={styles.filterLabelContent}>
+                      <Ionicons name="volume-mute" size={14} color="#2E7D32" />
+                      <Text style={[styles.filterLabelText, { color: '#2E7D32' }]}>Quietness level</Text>
+                    </View>
                   </View>
                   <View style={styles.chipRow}>
                     {['Noisy', 'Moderate', 'Quiet'].map(level => {
@@ -723,8 +773,11 @@ export default function MapScreen() {
 
                 {/* Section: Amenities */}
                 <View style={styles.filterSection}>
-                  <View style={[styles.filterLabelPill, { backgroundColor: '#F3E5F5' }]}>
-                    <Text style={[styles.filterLabelText, { color: '#6A1B9A' }]}>Amenities 🛠️</Text>
+                  <View style={[styles.filterLabelPill, { backgroundColor: '#f6e8fe' }]}>
+                    <View style={styles.filterLabelContent}>
+                      <Ionicons name="construct" size={14} color="#6b457f" />
+                      <Text style={[styles.filterLabelText, { color: '#6b457f' }]}>Amenities</Text>
+                    </View>
                   </View>
                   <View style={styles.chipRow}>
                     {['Outlets', 'Wi-Fi', 'Coffee', 'Study rooms'].map(amenity => {
@@ -745,7 +798,10 @@ export default function MapScreen() {
                 {/* Section: Max Distance */}
                 <View style={styles.filterSection}>
                   <View style={[styles.filterLabelPill, { backgroundColor: '#F0F4C3' }]}>
-                    <Text style={[styles.filterLabelText, { color: '#827717' }]}>Max Distance 📏</Text>
+                    <View style={styles.filterLabelContent}>
+                      <Ionicons name="resize" size={14} color="#827717" />
+                      <Text style={[styles.filterLabelText, { color: '#827717' }]}>Max Distance</Text>
+                    </View>
                   </View>
                   <Text style={styles.distanceValue}>{maxDistance.toFixed(1)} km</Text>
                   <Slider
@@ -764,12 +820,12 @@ export default function MapScreen() {
                     <Text style={styles.sliderLabelText}>5km</Text>
                   </View>
                 </View>
-              </View>
+              </Animated.View>
             )}
           </View>
 
           {/* Legend Card */}
-          <View style={styles.legendCard} pointerEvents="none">
+          <View style={[styles.legendCard, showFilters && styles.legendCardHidden]} pointerEvents="none">
             <Text style={styles.legendTitle}>Quietness level</Text>
             
             <View style={styles.legendItem}>
@@ -1152,6 +1208,8 @@ const styles = StyleSheet.create({
 
   // FILTER MODAL STYLES
   filterModal: {
+    position: 'relative',
+    zIndex: 20,
     backgroundColor: '#ffffff',
     marginTop: 12,
     borderRadius: 20,
@@ -1179,6 +1237,11 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     marginBottom: 8,
+  },
+  filterLabelContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   filterLabelText: {
     fontSize: 13,
@@ -1237,6 +1300,10 @@ const styles = StyleSheet.create({
 
   // LEGEND STYLES
   legendCard: {
+    position: 'absolute',
+    right: 16,
+    top: 16,
+    zIndex: 1,
     backgroundColor: '#ffffff',
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -1246,7 +1313,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 6,
-    alignSelf: 'flex-start',
+  },
+  legendCardHidden: {
+    opacity: 0.28,
   },
   legendTitle: {
     fontSize: 11,
