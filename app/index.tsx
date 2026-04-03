@@ -403,12 +403,12 @@ export default function MapScreen() {
     },
     { id: '2', title: 'Grey Nuns Reading Room', level: 'Quiet', coord: { latitude: 45.4936, longitude: -73.5772 }, address: '1190 Guy St', status: 'Open • 9 am - 9 pm', score: 5, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '4 mins', dist: '300 m', active: true }] },
     { id: '3', title: 'Kafein Cafe', level: 'Moderate', coord: { latitude: 45.497075257693226, longitude: -73.57711049446944 }, address: '1429 Bishop St', status: 'Open • 7 am - 8 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '3 mins', dist: '250 m', active: true }] },
-    { id: '4', title: 'Myriade Cafe', level: 'Moderate', coord: { latitude: 45.49610120959447, longitude: -73.57789764638058 }, address: '1432 Mackay St, Montreal, Quebec H3G 2H7', status: 'Open • 8 am - 6 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '5 mins', dist: '400 m', active: true }] },
+    { id: '4', title: 'Myriade Cafe', level: 'Moderate', coord: { latitude: 45.49610120959447, longitude: -73.57789764638058 }, address: '1432 Mackay St', status: 'Open • 8 am - 6 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '5 mins', dist: '400 m', active: true }] },
     { id: '5', title: 'EV Building', level: 'Noisy', coord: { latitude: 45.4954, longitude: -73.5778 }, address: '1515 Saint-Catherine St W', status: 'Open • 24/7', score: 1, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '1 min', dist: '50 m', active: true }] },
     { id: '6', title: 'Hall Building 12th Floor', level: 'Quiet', coord: { latitude: 45.4970, longitude: -73.5788 }, address: '1455 De Maisonneuve Blvd W', status: 'Open • 8 am - 11 pm', score: 4, features: [{ label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
     { id: '7', title: 'Leaves House', level: 'Moderate', coord: { latitude: 45.4990, longitude: -73.5780 }, address: '2051 de la Montagne St', status: 'Open • 9 am - 5 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '7 mins', dist: '550 m', active: true }] },
     { id: '8', title: 'Crew Collective & Cafe', level: 'Moderate', coord: { latitude: 45.5023, longitude: -73.5595 }, address: '360 St Jacques St', status: 'Open • 8 am - 4 pm', score: 2, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '12 mins', dist: '2.5 km', active: true }, { mode: 'Walk', icon: '🚶', time: '30 mins', dist: '2.5 km', active: false }] },
-    { id: '9', title: 'Tim Hortons', level: 'Noisy', coord: { latitude: 45.49604280712215, longitude: -73.57969024077563 }, address: '2081 Guy St, Montreal, Quebec H3H 2L9', status: 'Open • 24/7', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
+    { id: '9', title: 'Tim Hortons', level: 'Noisy', coord: { latitude: 45.49604280712215, longitude: -73.57969024077563 }, address: '2081 Guy St', status: 'Open • 24/7', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
     { id: '10', title: 'Starbucks (Guy-Concordia)', level: 'Noisy', coord: { latitude: 45.49565650315576, longitude: -73.579611783592 }, address: '1561 Saint-Catherine St W', status: 'Open • 6 am - 8 pm', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '1 min', dist: '50 m', active: true }] },
     { id: '11', title: 'BAnQ (Grande Bibliothèque)', level: 'Quiet', coord: { latitude: 45.5154, longitude: -73.5621 }, address: '475 De Maisonneuve Blvd E', status: 'Open • 10 am - 10 pm', score: 5, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }], etas: [{ mode: 'Transit', icon: '🚌', time: '15 mins', dist: '2.5 km', active: true }] },
     { id: '12', title: 'Westmount Public Library', level: 'Quiet', coord: { latitude: 45.4851, longitude: -73.5960 }, address: '4574 Sherbrooke St W', status: 'Open • 10 am - 9 pm', score: 4, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '25 mins', dist: '2.0 km', active: true }, { mode: 'Transit', icon: '🚌', time: '10 mins', dist: '2.0 km', active: false }] },
@@ -416,7 +416,7 @@ export default function MapScreen() {
     { id: '14', title: 'Atwater Library', level: 'Quiet', coord: { latitude: 45.4883, longitude: -73.5855 }, address: '1200 Atwater Ave', status: 'Open • 10 am - 6 pm', score: 4, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '15 mins', dist: '1.2 km', active: true }] },
     { id: '15', title: 'Café Olimpico (Old Port)', level: 'Moderate', coord: { latitude: 45.5065, longitude: -73.5539 }, address: '419 Saint-Vincent St', status: 'Open • 7 am - 7 pm', score: 2, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '18 mins', dist: '2.8 km', active: true }] },
     { id: '16', title: 'Mont-Royal Chalet', level: 'Noisy', coord: { latitude: 45.5035, longitude: -73.5874 }, address: '1196 Camillien-Houde Rd', status: 'Open • 8 am - 8 pm', score: 1, features: [{ label: 'Outdoors', color: '#E1F5FE' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '45 mins', dist: '3.5 km', active: true }, { mode: 'Transit', icon: '🚌', time: '30 mins', dist: '3.5 km', active: false }] },
-    { id: '17', title: 'ER Building Floor 9', level: 'Quiet', coord: { latitude: 45.496200460477574, longitude: -73.58012862739068 }, address: '2155 Guy St, Montreal, Quebec H3H 2L9', status: 'Open • 8 am - 11 pm', score: 5, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '180 m', active: true }] }
+    { id: '17', title: 'ER Building Floor 9', level: 'Quiet', coord: { latitude: 45.496200460477574, longitude: -73.58012862739068 }, address: '2155 Guy St', status: 'Open • 8 am - 11 pm', score: 5, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '180 m', active: true }] }
   ];
 
   const searchResults = useMemo(() => {
@@ -1011,7 +1011,7 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 28,
     fontWeight: '800',
-    fontFamily: 'System',
+    fontFamily: 'Nunito_800ExtraBold',
     marginBottom: 16,
     letterSpacing: 0.5,
   },
@@ -1033,6 +1033,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: '#333333',
+    fontFamily: 'Nunito_400Regular',
   },
   
   // SEARCH OVERLAY STYLES
@@ -1059,6 +1060,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333',
     marginBottom: 16,
+    fontFamily: 'Nunito_700Bold',
   },
   searchResultItem: {
     flexDirection: 'row',
@@ -1091,10 +1093,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333',
     marginBottom: 4,
+    fontFamily: 'Nunito_700Bold',
   },
   searchResultAddress: {
     fontSize: 12,
     color: '#777',
+    fontFamily: 'Nunito_400Regular',
   },
   levelPillMini: {
     paddingHorizontal: 8,
@@ -1104,12 +1108,14 @@ const styles = StyleSheet.create({
   levelPillMiniText: {
     fontSize: 10,
     fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   noResultsText: {
     textAlign: 'center',
     marginTop: 40,
     color: '#777',
     fontSize: 14,
+    fontFamily: 'Nunito_500Medium',
   },
 
   floatingContainer: {
@@ -1141,6 +1147,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 15,
     marginLeft: 6,
+    fontFamily: 'Nunito_600SemiBold',
   },
 
   // FILTER MODAL STYLES
@@ -1176,6 +1183,7 @@ const styles = StyleSheet.create({
   filterLabelText: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   chipRow: {
     flexDirection: 'row',
@@ -1199,10 +1207,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#555',
     fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
   },
   chipTextActive: {
     color: '#2E7D32',
     fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   distanceValue: {
     position: 'absolute',
@@ -1211,6 +1221,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#333',
     fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   sliderLabels: {
     flexDirection: 'row',
@@ -1221,6 +1232,7 @@ const styles = StyleSheet.create({
     fontSize: 10,
     color: '#888',
     fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
 
   // LEGEND STYLES
@@ -1241,6 +1253,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#333333',
     marginBottom: 6,
+    fontFamily: 'Nunito_700Bold',
   },
   legendItem: {
     flexDirection: 'row',
@@ -1257,6 +1270,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#555555',
     fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
 
   // EMPTY STATE TOAST
@@ -1284,6 +1298,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     flexShrink: 1,
+    fontFamily: 'Nunito_600SemiBold',
   },
 
   // CUSTOM MARKER STYLES
@@ -1398,6 +1413,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: '#333',
     marginBottom: 4,
+    fontFamily: 'Nunito_800ExtraBold',
   },
   addressRow: {
     flexDirection: 'row',
@@ -1408,11 +1424,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#777',
     marginLeft: 4,
+    fontFamily: 'Nunito_400Regular',
   },
   statusText: {
     fontSize: 14,
     color: '#6B9E78', // matching primary green
     fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   levelTag: {
     paddingHorizontal: 12,
@@ -1422,12 +1440,14 @@ const styles = StyleSheet.create({
   levelTagText: {
     fontSize: 13,
     fontWeight: '700',
+    fontFamily: 'Nunito_700Bold',
   },
   sectionHeading: {
     fontSize: 14,
     fontWeight: '600',
     color: '#666',
     marginBottom: 8,
+    fontFamily: 'Nunito_600SemiBold',
   },
   levelBarContainer: {
     flexDirection: 'row',
@@ -1454,6 +1474,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: '#333',
+    fontFamily: 'Nunito_600SemiBold',
   },
   etaScroll: {
     flexDirection: 'row',
@@ -1483,6 +1504,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: '#333',
+    fontFamily: 'Nunito_700Bold',
   },
   etaTextActive: {
     color: '#2E7D32',
@@ -1491,12 +1513,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#777',
     marginTop: 2,
+    fontFamily: 'Nunito_400Regular',
   },
   etaMode: {
     fontSize: 12,
     fontWeight: '600',
     color: '#444',
     marginTop: 4,
+    fontFamily: 'Nunito_600SemiBold',
   },
   navButton: {
     flexDirection: 'row',
@@ -1514,6 +1538,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     marginLeft: 8,
+    fontFamily: 'Nunito_700Bold',
   },
   navButtonTextDisabled: {
     color: '#a0a0a0',
@@ -1552,6 +1577,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1a1a1a',
     flex: 1,
+    fontFamily: 'Nunito_700Bold',
   },
   listLevelPill: {
     flexDirection: 'row',
@@ -1564,6 +1590,7 @@ const styles = StyleSheet.create({
   listLevelPillText: {
     fontSize: 12,
     fontWeight: '600',
+    fontFamily: 'Nunito_600SemiBold',
   },
   listCardAddressRow: {
     flexDirection: 'row',
@@ -1574,6 +1601,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#666',
     fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
   },
   listCardStatusRow: {
     flexDirection: 'row',
@@ -1583,10 +1611,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#2E7D32', // Green
+    fontFamily: 'Nunito_700Bold',
   },
   listCardStatusHours: {
     fontSize: 13,
     fontWeight: '500',
     color: '#666',
+    fontFamily: 'Nunito_500Medium',
   }
 });
