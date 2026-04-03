@@ -3,9 +3,10 @@ import Slider from '@react-native-community/slider';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, Keyboard, Linking, PanResponder, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Keyboard, Linking, PanResponder, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { QuietnessTag } from '../components/QuietnessTag';
 
 // Haversine formula to calculate distance between two lat/lon coordinates in km
 enum SheetState {
@@ -663,9 +664,7 @@ export default function MapScreen() {
                       <Text style={styles.searchResultTitle}>{place.title}</Text>
                       <Text style={styles.searchResultAddress}>{place.address}</Text>
                     </View>
-                    <View style={[styles.levelPillMini, { backgroundColor: '#E8F5E9' }]}>
-                      <Text style={[styles.levelPillMiniText, { color: '#2E7D32' }]}>{place.level}</Text>
-                    </View>
+                    <QuietnessTag level={place.level} containerStyle={styles.levelPillMini} textStyle={styles.levelPillMiniText} />
                   </TouchableOpacity>
                 ))}
               </View>
@@ -686,12 +685,7 @@ export default function MapScreen() {
                           <HighlightedText text={place.address || ''} query={searchQuery} />
                         </Text>
                       </View>
-                      <View style={[styles.levelPillMini, { backgroundColor: place.level === 'Quiet' ? '#E8F5E9' : place.level === 'Moderate' ? '#FFF3E0' : '#FFEBEE' }]}>
-                        <Text style={[
-                          styles.levelPillMiniText, 
-                          { color: place.level === 'Quiet' ? '#2E7D32' : place.level === 'Moderate' ? '#E65100' : '#C62828' }
-                        ]}>{place.level}</Text>
-                      </View>
+                      <QuietnessTag level={place.level} containerStyle={styles.levelPillMini} textStyle={styles.levelPillMiniText} />
                     </TouchableOpacity>
                   ))
                 ) : (
@@ -887,15 +881,18 @@ export default function MapScreen() {
                     <Ionicons name="location" size={14} color="#A01D21" />
                     <Text style={styles.addressText}>{selectedPlace.address}</Text>
                   </View>
-                  <Text style={styles.statusText}>{selectedPlace.status || 'Status unavailable'}</Text>
+                  <View style={styles.statusRow}>
+                    <Text style={styles.statusTextOpen}>
+                      {(selectedPlace.status).split(' • ')[0]}
+                    </Text>
+                      <Text style={styles.statusTextHours}>
+                        {' • ' + selectedPlace.status.split(' • ')[1]}
+                      </Text>
+                  </View>
                 </View>
 
                 {/* Level Tag Top Right */}
-                <View style={[styles.levelTag, { backgroundColor: '#E8F5E9' }]}>
-                  <Text style={[styles.levelTagText, { color: '#2E7D32' }]}>
-                    {selectedPlace.level === 'Quiet' ? '🔇 Quiet' : selectedPlace.level}
-                  </Text>
-                </View>
+                <QuietnessTag level={selectedPlace.level} containerStyle={styles.levelTag} textStyle={styles.levelTagText} iconSize={14} />
               </View>
 
               {/* Quietness Level Bar */}
@@ -1005,16 +1002,7 @@ export default function MapScreen() {
                     <View style={styles.listCardTopRow}>
                       <Text style={styles.listCardTitle}>{place.title}</Text>
                       {/* Pill style matching screenshot */}
-                      <View style={[
-                        styles.listLevelPill, 
-                        { backgroundColor: place.level === 'Quiet' ? '#C8E6C9' : place.level === 'Moderate' ? '#FFECB3' : '#FFCDD2' }
-                      ]}>
-                        <Ionicons name={place.level === 'Quiet' ? 'volume-mute' : place.level === 'Moderate' ? 'volume-low' : 'volume-high'} size={12} color={place.level === 'Quiet' ? '#2E7D32' : place.level === 'Moderate' ? '#EF6C00' : '#C62828'} style={{ marginRight: 4 }} />
-                        <Text style={[
-                          styles.listLevelPillText,
-                          { color: place.level === 'Quiet' ? '#2E7D32' : place.level === 'Moderate' ? '#EF6C00' : '#C62828' }
-                        ]}>{place.level}</Text>
-                      </View>
+                      <QuietnessTag level={place.level} containerStyle={styles.listLevelPill} textStyle={styles.listLevelPillText} />
                     </View>
                     <View style={styles.listCardAddressRow}>
                       <Ionicons name="location" size={14} color="#A01D21" style={{ marginRight: 4 }} />
@@ -1495,13 +1483,25 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontFamily: 'Nunito_400Regular',
   },
-  statusText: {
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusTextOpen: {
     fontSize: 14,
     color: '#6B9E78', // matching primary green
     fontWeight: '600',
     fontFamily: 'Nunito_600SemiBold',
   },
+  statusTextHours: {
+    fontSize: 14,
+    color: '#777',
+    fontWeight: '500',
+    fontFamily: 'Nunito_500Medium',
+  },
   levelTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
