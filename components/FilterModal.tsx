@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import React from 'react';
-import { Animated, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Animated, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type FilterModalProps = {
   fadeSearchAnim: Animated.Value;
@@ -11,11 +11,15 @@ type FilterModalProps = {
   filterModalAnim: Animated.Value;
   selectedLevels: string[];
   selectedAmenities: string[];
+  selectedCrowdDensities: string[];
+  selectedTemperatures: string[];
   maxDistance: number;
   onToggleFilters: () => void;
   onCloseFilters: () => void;
   onToggleLevel: (level: string) => void;
   onToggleAmenity: (amenity: string) => void;
+  onToggleCrowdDensity: (density: string) => void;
+  onToggleTemperature: (temperature: string) => void;
   onMaxDistanceChange: (value: number) => void;
 };
 
@@ -27,11 +31,15 @@ export function FilterModal({
   filterModalAnim,
   selectedLevels,
   selectedAmenities,
+  selectedCrowdDensities,
+  selectedTemperatures,
   maxDistance,
   onToggleFilters,
   onCloseFilters,
   onToggleLevel,
   onToggleAmenity,
+  onToggleCrowdDensity,
+  onToggleTemperature,
   onMaxDistanceChange,
 }: FilterModalProps) {
   return (
@@ -73,75 +81,125 @@ export function FilterModal({
             <TouchableOpacity style={styles.closeIcon} onPress={onCloseFilters}>
               <Ionicons name="close" size={20} color="#555" />
             </TouchableOpacity>
-
-            {/* Section: Amenities */}
-            <View style={styles.filterSection}>
-              <View style={[styles.filterLabelPill, { backgroundColor: '#E8F5E9' }]}>
-                <View style={styles.filterLabelContent}>
-                  <Ionicons name="volume-mute" size={14} color="#2E7D32" />
-                  <Text style={[styles.filterLabelText, { color: '#2E7D32' }]}>Quietness level</Text>
+            <ScrollView
+              showsVerticalScrollIndicator={true}
+              persistentScrollbar={true}
+            >
+              {/* Section: Amenities */}
+              <View style={styles.filterSection}>
+                <View style={[styles.filterLabelPill, { backgroundColor: '#E8F5E9' }]}>
+                  <View style={styles.filterLabelContent}>
+                    <Ionicons name="volume-mute" size={14} color="#2E7D32" />
+                    <Text style={[styles.filterLabelText, { color: '#2E7D32' }]}>Quietness level</Text>
+                  </View>
+                </View>
+                <View style={styles.chipRow}>
+                  {['Noisy', 'Moderate', 'Quiet'].map((level) => {
+                    const isActive = selectedLevels.includes(level);
+                    return (
+                      <TouchableOpacity key={level} style={[styles.chip, isActive && styles.chipActive]} onPress={() => onToggleLevel(level)}>
+                        <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{level}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
-              <View style={styles.chipRow}>
-                {['Noisy', 'Moderate', 'Quiet'].map((level) => {
-                  const isActive = selectedLevels.includes(level);
-                  return (
-                    <TouchableOpacity key={level} style={[styles.chip, isActive && styles.chipActive]} onPress={() => onToggleLevel(level)}>
-                      <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{level}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
 
-            {/* Section: Max Distance */}
-            <View style={styles.filterSection}>
-              <View style={[styles.filterLabelPill, { backgroundColor: '#f6e8fe' }]}>
-                <View style={styles.filterLabelContent}>
-                  <Ionicons name="construct" size={14} color="#6b457f" />
-                  <Text style={[styles.filterLabelText, { color: '#6b457f' }]}>Amenities</Text>
+              {/* Section: Max Distance */}
+              <View style={styles.filterSection}>
+                <View style={[styles.filterLabelPill, { backgroundColor: '#f6e8fe' }]}>
+                  <View style={styles.filterLabelContent}>
+                    <Ionicons name="construct" size={14} color="#6b457f" />
+                    <Text style={[styles.filterLabelText, { color: '#6b457f' }]}>Amenities</Text>
+                  </View>
+                </View>
+                <View style={styles.chipRow}>
+                  {['Outlets', 'WiFi', 'Coffee', 'Study rooms'].map((amenity) => {
+                    const isActive = selectedAmenities.includes(amenity);
+                    return (
+                      <TouchableOpacity
+                        key={amenity}
+                        style={[styles.chip, isActive && styles.chipActive]}
+                        onPress={() => onToggleAmenity(amenity)}
+                      >
+                        <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{amenity}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
-              <View style={styles.chipRow}>
-                {['Outlets', 'Wi-Fi', 'Coffee', 'Study rooms'].map((amenity) => {
-                  const isActive = selectedAmenities.includes(amenity);
-                  return (
-                    <TouchableOpacity
-                      key={amenity}
-                      style={[styles.chip, isActive && styles.chipActive]}
-                      onPress={() => onToggleAmenity(amenity)}
-                    >
-                      <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{amenity}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            </View>
 
-            <View style={styles.filterSection}>
-              <View style={[styles.filterLabelPill, { backgroundColor: '#F0F4C3' }]}>
-                <View style={styles.filterLabelContent}>
-                  <Ionicons name="resize" size={14} color="#827717" />
-                  <Text style={[styles.filterLabelText, { color: '#827717' }]}>Max Distance</Text>
+              <View style={styles.filterSection}>
+                <View style={[styles.filterLabelPill, { backgroundColor: '#E3F2FD' }]}>
+                  <View style={styles.filterLabelContent}>
+                    <Ionicons name="people" size={14} color="#1565C0" />
+                    <Text style={[styles.filterLabelText, { color: '#1565C0' }]}>Crowd density</Text>
+                  </View>
+                </View>
+                <View style={styles.chipRow}>
+                  {['Low', 'Moderate', 'High'].map((density) => {
+                    const isActive = selectedCrowdDensities.includes(density);
+                    return (
+                      <TouchableOpacity
+                        key={density}
+                        style={[styles.chip, isActive && styles.chipActive]}
+                        onPress={() => onToggleCrowdDensity(density)}
+                      >
+                        <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{density}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
-              <Text style={styles.distanceValue}>{maxDistance.toFixed(1)} km</Text>
-              <Slider
-                style={{ width: '100%', height: 40 }}
-                minimumValue={0.1}
-                maximumValue={5}
-                step={0.1}
-                value={maxDistance}
-                onValueChange={(val) => onMaxDistanceChange(val)}
-                minimumTrackTintColor="#6B9E78"
-                maximumTrackTintColor="#E0E0E0"
-                thumbTintColor="#6B9E78"
-              />
-              <View style={styles.sliderLabels}>
-                <Text style={styles.sliderLabelText}>100m</Text>
-                <Text style={styles.sliderLabelText}>5km</Text>
+
+              <View style={styles.filterSection}>
+                <View style={[styles.filterLabelPill, { backgroundColor: '#ffe7ed' }]}>
+                  <View style={styles.filterLabelContent}>
+                    <Ionicons name="thermometer" size={14} color="rgb(231, 132, 183)" />
+                    <Text style={[styles.filterLabelText, { color: 'rgb(231, 132, 183)' }]}>Temperature</Text>
+                  </View>
+                </View>
+                <View style={styles.chipRow}>
+                  {['Cool', 'Neutral', 'Warm'].map((temperature) => {
+                    const isActive = selectedTemperatures.includes(temperature);
+                    return (
+                      <TouchableOpacity
+                        key={temperature}
+                        style={[styles.chip, isActive && styles.chipActive]}
+                        onPress={() => onToggleTemperature(temperature)}
+                      >
+                        <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{temperature}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
               </View>
-            </View>
+
+              <View style={styles.filterSection}>
+                <View style={[styles.filterLabelPill, { backgroundColor: '#F0F4C3' }]}>
+                  <View style={styles.filterLabelContent}>
+                    <Ionicons name="resize" size={14} color="#827717" />
+                    <Text style={[styles.filterLabelText, { color: '#827717' }]}>Max Distance</Text>
+                  </View>
+                </View>
+                <Text style={styles.distanceValue}>{maxDistance.toFixed(1)} km</Text>
+                <Slider
+                  style={{ width: '100%', height: 40 }}
+                  minimumValue={0.1}
+                  maximumValue={5}
+                  step={0.1}
+                  value={maxDistance}
+                  onValueChange={(val) => onMaxDistanceChange(val)}
+                  minimumTrackTintColor="#6B9E78"
+                  maximumTrackTintColor="#E0E0E0"
+                  thumbTintColor="#6B9E78"
+                />
+                <View style={styles.sliderLabels}>
+                  <Text style={styles.sliderLabelText}>100m</Text>
+                  <Text style={styles.sliderLabelText}>5km</Text>
+                </View>
+              </View>
+            </ScrollView>
           </Animated.View>
         )}
       </View>
@@ -208,6 +266,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 20,
     padding: 16,
+    height: 400,
     width: 260,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },

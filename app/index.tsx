@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+﻿import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -225,6 +225,8 @@ export default function MapScreen() {
 
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedCrowdDensities, setSelectedCrowdDensities] = useState<string[]>([]);
+  const [selectedTemperatures, setSelectedTemperatures] = useState<string[]>([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const fadeSearchAnim = useRef(new Animated.Value(0)).current;
@@ -273,6 +275,36 @@ export default function MapScreen() {
     setSelectedAmenities(prev => 
       prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]
     );
+  };
+
+  const toggleCrowdDensity = (density: string) => {
+    setSelectedCrowdDensities(prev =>
+      prev.includes(density) ? prev.filter(d => d !== density) : [...prev, density]
+    );
+  };
+
+  const toggleTemperature = (temperature: string) => {
+    setSelectedTemperatures(prev =>
+      prev.includes(temperature) ? prev.filter(t => t !== temperature) : [...prev, temperature]
+    );
+  };
+
+  const getCrowdDensity = (place: any) => {
+    const crowdTag = place.features?.find((f: any) => typeof f.label === 'string' && f.label.includes('👥'))?.label?.toLowerCase();
+    if (!crowdTag) return null;
+    if (crowdTag.includes('low')) return 'Low';
+    if (crowdTag.includes('moderate')) return 'Moderate';
+    if (crowdTag.includes('high')) return 'High';
+    return null;
+  };
+
+  const getTemperature = (place: any) => {
+    const temperatureTag = place.features?.find((f: any) => typeof f.label === 'string' && f.label.includes('🌡️'))?.label?.toLowerCase();
+    if (!temperatureTag) return null;
+    if (temperatureTag.includes('cool')) return 'Cool';
+    if (temperatureTag.includes('neutral')) return 'Neutral';
+    if (temperatureTag.includes('warm')) return 'Warm';
+    return null;
   };
 
   const handleSelectFromSearch = (place: any) => {
@@ -357,6 +389,7 @@ export default function MapScreen() {
         { label: 'Study rooms', color: '#FADEE1' },
         { label: 'Wi-Fi', color: '#FFF9C4' },
         { label: 'Outlets', color: '#F0E6FF' },
+        { label: '🌡️ Cool', color: '#FFE7ED' },
         { label: '👥 Low', color: '#D4EFFF' }
       ],
       etas: [
@@ -366,22 +399,22 @@ export default function MapScreen() {
         { mode: 'Drive', icon: '🚗', time: '2 mins', dist: '150 m', active: false }
       ]
     },
-    { id: '2', title: 'Grey Nuns Reading Room', level: 'Quiet', coord: { latitude: 45.4936, longitude: -73.5772 }, address: '1190 Guy St', status: 'Open • 9 am - 9 pm', score: 5, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '4 mins', dist: '300 m', active: true }] },
-    { id: '3', title: 'Kafein Cafe', level: 'Moderate', coord: { latitude: 45.497075257693226, longitude: -73.57711049446944 }, address: '1429 Bishop St', status: 'Open • 7 am - 8 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '3 mins', dist: '250 m', active: true }] },
-    { id: '4', title: 'Myriade Cafe', level: 'Moderate', coord: { latitude: 45.49610120959447, longitude: -73.57789764638058 }, address: '1432 Mackay St', status: 'Open • 8 am - 6 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '5 mins', dist: '400 m', active: true }] },
-    { id: '5', title: 'EV Building', level: 'Noisy', coord: { latitude: 45.4954, longitude: -73.5778 }, address: '1515 Saint-Catherine St W', status: 'Open • 24/7', score: 1, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '1 min', dist: '50 m', active: true }] },
-    { id: '6', title: 'Hall Building 12th Floor', level: 'Quiet', coord: { latitude: 45.4970, longitude: -73.5788 }, address: '1455 De Maisonneuve Blvd W', status: 'Open • 8 am - 11 pm', score: 4, features: [{ label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
-    { id: '7', title: 'Leaves House', level: 'Moderate', coord: { latitude: 45.4990, longitude: -73.5780 }, address: '2051 de la Montagne St', status: 'Open • 9 am - 5 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '7 mins', dist: '550 m', active: true }] },
-    { id: '8', title: 'Crew Collective & Cafe', level: 'Moderate', coord: { latitude: 45.5023, longitude: -73.5595 }, address: '360 St Jacques St', status: 'Open • 8 am - 4 pm', score: 2, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '12 mins', dist: '2.5 km', active: true }, { mode: 'Walk', icon: '🚶', time: '30 mins', dist: '2.5 km', active: false }] },
-    { id: '9', title: 'Tim Hortons', level: 'Noisy', coord: { latitude: 45.49604280712215, longitude: -73.57969024077563 }, address: '2081 Guy St', status: 'Open • 24/7', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
-    { id: '10', title: 'Starbucks (Guy-Concordia)', level: 'Noisy', coord: { latitude: 45.49565650315576, longitude: -73.579611783592 }, address: '1561 Saint-Catherine St W', status: 'Open • 6 am - 8 pm', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '1 min', dist: '50 m', active: true }] },
-    { id: '11', title: 'BAnQ (Grande Bibliothèque)', level: 'Quiet', coord: { latitude: 45.5154, longitude: -73.5621 }, address: '475 De Maisonneuve Blvd E', status: 'Open • 10 am - 10 pm', score: 5, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }], etas: [{ mode: 'Transit', icon: '🚌', time: '15 mins', dist: '2.5 km', active: true }] },
-    { id: '12', title: 'Westmount Public Library', level: 'Quiet', coord: { latitude: 45.4851, longitude: -73.5960 }, address: '4574 Sherbrooke St W', status: 'Open • 10 am - 9 pm', score: 4, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '25 mins', dist: '2.0 km', active: true }, { mode: 'Transit', icon: '🚌', time: '10 mins', dist: '2.0 km', active: false }] },
-    { id: '13', title: 'Café Myriade (Plateau)', level: 'Moderate', coord: { latitude: 45.5186, longitude: -73.5804 }, address: '4627 Saint-Denis St', status: 'Open • 8 am - 6 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '20 mins', dist: '3.0 km', active: true }] },
-    { id: '14', title: 'Atwater Library', level: 'Quiet', coord: { latitude: 45.4883, longitude: -73.5855 }, address: '1200 Atwater Ave', status: 'Open • 10 am - 6 pm', score: 4, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '15 mins', dist: '1.2 km', active: true }] },
-    { id: '15', title: 'Café Olimpico (Old Port)', level: 'Moderate', coord: { latitude: 45.5065, longitude: -73.5539 }, address: '419 Saint-Vincent St', status: 'Open • 7 am - 7 pm', score: 2, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '18 mins', dist: '2.8 km', active: true }] },
-    { id: '16', title: 'Mont-Royal Chalet', level: 'Noisy', coord: { latitude: 45.5035, longitude: -73.5874 }, address: '1196 Camillien-Houde Rd', status: 'Open • 8 am - 8 pm', score: 1, features: [{ label: 'Outdoors', color: '#E1F5FE' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '45 mins', dist: '3.5 km', active: true }, { mode: 'Transit', icon: '🚌', time: '30 mins', dist: '3.5 km', active: false }] },
-    { id: '17', title: 'ER Building Floor 9', level: 'Quiet', coord: { latitude: 45.496200460477574, longitude: -73.58012862739068 }, address: '2155 Guy St', status: 'Open • 8 am - 11 pm', score: 5, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '180 m', active: true }] }
+    { id: '2', title: 'Grey Nuns Reading Room', level: 'Quiet', coord: { latitude: 45.4936, longitude: -73.5772 }, address: '1190 Guy St', status: 'Open • 9 am - 9 pm', score: 5, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Cool', color: '#FFE7ED' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '4 mins', dist: '300 m', active: true }] },
+    { id: '3', title: 'Kafein Cafe', level: 'Moderate', coord: { latitude: 45.497075257693226, longitude: -73.57711049446944 }, address: '1429 Bishop St', status: 'Open • 7 am - 8 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Neutral', color: '#FFE7ED' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '3 mins', dist: '250 m', active: true }] },
+    { id: '4', title: 'Myriade Cafe', level: 'Moderate', coord: { latitude: 45.49610120959447, longitude: -73.57789764638058 }, address: '1432 Mackay St', status: 'Open • 8 am - 6 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Warm', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '5 mins', dist: '400 m', active: true }] },
+    { id: '5', title: 'EV Building', level: 'Noisy', coord: { latitude: 45.4954, longitude: -73.5778 }, address: '1515 Saint-Catherine St W', status: 'Open • 24/7', score: 1, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Warm', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '1 min', dist: '50 m', active: true }] },
+    { id: '6', title: 'Hall Building 12th Floor', level: 'Quiet', coord: { latitude: 45.4970, longitude: -73.5788 }, address: '1455 De Maisonneuve Blvd W', status: 'Open • 8 am - 11 pm', score: 4, features: [{ label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Neutral', color: '#FFE7ED' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
+    { id: '7', title: 'Leaves House', level: 'Moderate', coord: { latitude: 45.4990, longitude: -73.5780 }, address: '2051 de la Montagne St', status: 'Open • 9 am - 5 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Cool', color: '#FFE7ED' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '7 mins', dist: '550 m', active: true }] },
+    { id: '8', title: 'Crew Collective & Cafe', level: 'Moderate', coord: { latitude: 45.5023, longitude: -73.5595 }, address: '360 St Jacques St', status: 'Open • 8 am - 4 pm', score: 2, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Neutral', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '12 mins', dist: '2.5 km', active: true }, { mode: 'Walk', icon: '🚶', time: '30 mins', dist: '2.5 km', active: false }] },
+    { id: '9', title: 'Tim Hortons', level: 'Noisy', coord: { latitude: 45.49604280712215, longitude: -73.57969024077563 }, address: '2081 Guy St', status: 'Open • 24/7', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Warm', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '150 m', active: true }] },
+    { id: '10', title: 'Starbucks (Guy-Concordia)', level: 'Noisy', coord: { latitude: 45.49565650315576, longitude: -73.579611783592 }, address: '1561 Saint-Catherine St W', status: 'Open • 6 am - 8 pm', score: 1, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Warm', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '1 min', dist: '50 m', active: true }] },
+    { id: '11', title: 'BAnQ (Grande Bibliothèque)', level: 'Quiet', coord: { latitude: 45.5154, longitude: -73.5621 }, address: '475 De Maisonneuve Blvd E', status: 'Open • 10 am - 10 pm', score: 5, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Cool', color: '#FFE7ED' }], etas: [{ mode: 'Transit', icon: '🚌', time: '15 mins', dist: '2.5 km', active: true }] },
+    { id: '12', title: 'Westmount Public Library', level: 'Quiet', coord: { latitude: 45.4851, longitude: -73.5960 }, address: '4574 Sherbrooke St W', status: 'Open • 10 am - 9 pm', score: 4, features: [{ label: 'Quiet Zone', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Cool', color: '#FFE7ED' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '25 mins', dist: '2.0 km', active: true }, { mode: 'Transit', icon: '🚌', time: '10 mins', dist: '2.0 km', active: false }] },
+    { id: '13', title: 'Café Myriade (Plateau)', level: 'Moderate', coord: { latitude: 45.5186, longitude: -73.5804 }, address: '4627 Saint-Denis St', status: 'Open • 8 am - 6 pm', score: 3, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Warm', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '20 mins', dist: '3.0 km', active: true }] },
+    { id: '14', title: 'Atwater Library', level: 'Quiet', coord: { latitude: 45.4883, longitude: -73.5855 }, address: '1200 Atwater Ave', status: 'Open • 10 am - 6 pm', score: 4, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Cool', color: '#FFE7ED' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '15 mins', dist: '1.2 km', active: true }] },
+    { id: '15', title: 'Café Olimpico (Old Port)', level: 'Moderate', coord: { latitude: 45.5065, longitude: -73.5539 }, address: '419 Saint-Vincent St', status: 'Open • 7 am - 7 pm', score: 2, features: [{ label: 'Coffee', color: '#FFE0B2' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: '🌡️ Neutral', color: '#FFE7ED' }, { label: '👥 Moderate', color: '#D4EFFF' }], etas: [{ mode: 'Transit', icon: '🚌', time: '18 mins', dist: '2.8 km', active: true }] },
+    { id: '16', title: 'Mont-Royal Chalet', level: 'Noisy', coord: { latitude: 45.5035, longitude: -73.5874 }, address: '1196 Camillien-Houde Rd', status: 'Open • 8 am - 8 pm', score: 1, features: [{ label: 'Outdoors', color: '#E1F5FE' }, { label: '🌡️ Cool', color: '#FFE7ED' }, { label: '👥 High', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '45 mins', dist: '3.5 km', active: true }, { mode: 'Transit', icon: '🚌', time: '30 mins', dist: '3.5 km', active: false }] },
+    { id: '17', title: 'ER Building Floor 9', level: 'Quiet', coord: { latitude: 45.496200460477574, longitude: -73.58012862739068 }, address: '2155 Guy St', status: 'Open • 8 am - 11 pm', score: 5, features: [{ label: 'Study rooms', color: '#FADEE1' }, { label: 'Wi-Fi', color: '#FFF9C4' }, { label: 'Outlets', color: '#F0E6FF' }, { label: '🌡️ Neutral', color: '#FFE7ED' }, { label: '👥 Low', color: '#D4EFFF' }], etas: [{ mode: 'Walk', icon: '🚶', time: '2 mins', dist: '180 m', active: true }] }
   ];
 
   const searchResults = useMemo(() => {
@@ -417,9 +450,19 @@ export default function MapScreen() {
         place.features?.some((f: any) => f.label.toLowerCase() === amenity.toLowerCase())
       );
 
-      return inDistance && inLevel && inAmenities;
+      const crowdDensity = getCrowdDensity(place);
+      const inCrowdDensity =
+        selectedCrowdDensities.length === 0 ||
+        (crowdDensity !== null && selectedCrowdDensities.includes(crowdDensity));
+
+      const temperature = getTemperature(place);
+      const inTemperature =
+        selectedTemperatures.length === 0 ||
+        (temperature !== null && selectedTemperatures.includes(temperature));
+
+      return inDistance && inLevel && inAmenities && inCrowdDensity && inTemperature;
     });
-  }, [maxDistance, selectedLevels, selectedAmenities]);
+  }, [maxDistance, selectedLevels, selectedAmenities, selectedCrowdDensities, selectedTemperatures]);
 
   // Effect to automatically close bottom sheet if selected place is filtered out
   useEffect(() => {
@@ -586,6 +629,8 @@ export default function MapScreen() {
           filterModalAnim={filterModalAnim}
           selectedLevels={selectedLevels}
           selectedAmenities={selectedAmenities}
+          selectedCrowdDensities={selectedCrowdDensities}
+          selectedTemperatures={selectedTemperatures}
           maxDistance={maxDistance}
           onToggleFilters={() => {
             setShowFilters(!showFilters);
@@ -594,6 +639,8 @@ export default function MapScreen() {
           onCloseFilters={() => setShowFilters(false)}
           onToggleLevel={toggleLevel}
           onToggleAmenity={toggleAmenity}
+          onToggleCrowdDensity={toggleCrowdDensity}
+          onToggleTemperature={toggleTemperature}
           onMaxDistanceChange={setMaxDistance}
         />
 
@@ -712,3 +759,4 @@ const styles = StyleSheet.create({
     elevation: 4,
   }
 });
+
