@@ -1,12 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
-import Slider from '@react-native-community/slider';
 import Constants from 'expo-constants';
 import { Stack } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, Keyboard, Linking, PanResponder, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Animated, Dimensions, Keyboard, Linking, PanResponder, StyleSheet, Text, View } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { QuietnessTag } from '../components/QuietnessTag';
+import { CustomStudyMarker } from '../components/CustomStudyMarker';
+import { FilterModal } from '../components/FilterModal';
+import { LocationInfoPanel } from '../components/LocationInfoPanel';
+import { MapHeader } from '../components/MapHeader';
+import { PlaceListSheet } from '../components/PlaceListSheet';
+import { SearchOverlay } from '../components/SearchOverlay';
+import { silverMapStyle } from '../constants/mapStyles';
 
 // Haversine formula to calculate distance between two lat/lon coordinates in km
 enum SheetState {
@@ -16,6 +21,10 @@ enum SheetState {
 }
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+const CURRENT_LOCATION = {
+  latitude: 45.4953,
+  longitude: -73.5790, // Near Guy-Concordia
+};
 
 function getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Earth's radius in km
@@ -59,55 +68,6 @@ const decodePolyline = (t: string, e: number = 5) => {
   }
   return res as {latitude: number; longitude: number;}[];
 };
-
-const silverMapStyle = [
-  { elementType: 'geometry', stylers: [{ color: '#f5f5f5' }] },
-  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f5f5' }] },
-  { featureType: 'administrative.land_parcel', elementType: 'labels.text.fill', stylers: [{ color: '#bdbdbd' }] },
-  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#eeeeee' }] },
-  { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#e5e5e5' }] },
-  { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
-  { featureType: 'road.arterial', elementType: 'labels.text.fill', stylers: [{ color: '#757575' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#dadada' }] },
-  { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#616161' }] },
-  { featureType: 'road.local', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] },
-  { featureType: 'transit.line', elementType: 'geometry', stylers: [{ color: '#e5e5e5' }] },
-  { featureType: 'transit.station', elementType: 'geometry', stylers: [{ color: '#eeeeee' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c9c9c9' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#9e9e9e' }] }
-];
-
-function CustomStudyMarker({ place, onPress, color }: any) {
-  const [tracksViewChanges, setTracksViewChanges] = useState(true);
-
-  // Stop tracking after the UI has had enough time to fully un-furl its styles natively
-  useEffect(() => {
-    const timer = setTimeout(() => setTracksViewChanges(false), 500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <Marker
-      key={place.id}
-      coordinate={place.coord}
-      title={place.title}
-      description={`${place.level} Zone`}
-      tracksViewChanges={tracksViewChanges}
-      onPress={onPress}
-    >
-      <View style={styles.customMarkerContainer}>
-        <View style={[styles.customMarkerPin, { backgroundColor: color }]}>
-          <View style={styles.customMarkerDot} />
-        </View>
-        <View style={[styles.customMarkerTriangle, { borderTopColor: color }]} />
-      </View>
-    </Marker>
-  );
-}
 
 export default function MapScreen() {
   const insets = useSafeAreaInsets();
@@ -333,32 +293,11 @@ export default function MapScreen() {
     }, 500);
   };
 
-  const HighlightedText = ({ text, query }: { text: string, query: string }) => {
-    if (!query.trim()) return <Text>{text}</Text>;
-    const parts = text.split(new RegExp(`(${query})`, 'gi'));
-    return (
-      <Text>
-        {parts.map((part, i) => 
-          part.toLowerCase() === query.toLowerCase() ? (
-            <Text key={i} style={{ color: '#6B9E78', fontWeight: 'bold' }}>{part}</Text>
-          ) : (
-            <Text key={i}>{part}</Text>
-          )
-        )}
-      </Text>
-    );
-  };
-
   const INITIAL_REGION = {
     latitude: 45.4960,
     longitude: -73.5775,
     latitudeDelta: 0.012,
     longitudeDelta: 0.012,
-  };
-
-  const CURRENT_LOCATION = {
-    latitude: 45.4953,
-    longitude: -73.5790, // Near Guy-Concordia
   };
 
   const fetchDirections = async (place: any, mode: string) => {
@@ -551,7 +490,14 @@ export default function MapScreen() {
         }}
       >
         {/* Current Location Marker */}
-        <Marker coordinate={CURRENT_LOCATION} title="Current Location" zIndex={100}>
+        <Marker
+          key="current-location-marker"
+          identifier="current-location-marker"
+          coordinate={CURRENT_LOCATION}
+          title="Current Location"
+          tracksViewChanges={false}
+          zIndex={100}
+        >
           <View style={styles.userLocationDotBorder}>
             <View style={styles.userLocationDot} />
           </View>
@@ -608,237 +554,48 @@ export default function MapScreen() {
           />
         )}
         
-        {/* Top Header Bar */}
-        <View style={[styles.header, { paddingTop: Math.max(insets.top, 20) + 10 }]} onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}>
-          <Text style={styles.headerTitle}>QuietSpace</Text>
-          <View style={styles.searchContainer}>
-            {isSearchActive ? (
-              <TouchableOpacity onPress={() => { setIsSearchActive(false); setSearchQuery(''); Keyboard.dismiss(); }}>
-                <Ionicons name="arrow-back" size={20} color="#6B9E78" />
-              </TouchableOpacity>
-            ) : (
-              <Ionicons name="search" size={20} color="#6B9E78" />
-            )}
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search study places..."
-              placeholderTextColor="#999999"
-              returnKeyType="search"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onFocus={() => setIsSearchActive(true)}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color="#aaa" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
+        <MapHeader
+          topInset={insets.top}
+          isSearchActive={isSearchActive}
+          searchQuery={searchQuery}
+          onDeactivateSearch={() => {
+            setIsSearchActive(false);
+            setSearchQuery('');
+            Keyboard.dismiss();
+          }}
+          onSearchQueryChange={setSearchQuery}
+          onActivateSearch={() => setIsSearchActive(true)}
+          onLayout={(e) => setHeaderHeight(e.nativeEvent.layout.height)}
+        />
 
-        {/* Search Overlay Container */}
-        <Animated.View 
-          style={[
-            styles.searchOverlay, 
-            { 
-              opacity: fadeSearchAnim,
-              top: headerHeight,
-              transform: [
-                { translateY: fadeSearchAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }
-              ],
-              pointerEvents: isSearchActive ? 'auto' : 'none'
-            }
-          ]}
-        >
-          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.searchScrollContent}>
-            {!searchQuery.trim() ? (
-              // Recommended Section
-              <View style={styles.recommendationSection}>
-                <Text style={styles.sectionHeadingText}>Recommended for You 🌟</Text>
-                {recommendedPlaces.map(place => (
-                  <TouchableOpacity key={`rec-${place.id}`} style={styles.searchResultItem} onPress={() => handleSelectFromSearch(place)}>
-                    <View style={styles.searchResultIcon}>
-                      <Ionicons name="star" size={16} color="#F0B361" />
-                    </View>
-                    <View style={styles.searchResultTextContainer}>
-                      <Text style={styles.searchResultTitle}>{place.title}</Text>
-                      <Text style={styles.searchResultAddress}>{place.address}</Text>
-                    </View>
-                    <QuietnessTag level={place.level} containerStyle={styles.levelPillMini} textStyle={styles.levelPillMiniText} />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            ) : (
-              // Search Results
-              <View style={styles.searchResultsSection}>
-                {searchResults.length > 0 ? (
-                  searchResults.map(place => (
-                    <TouchableOpacity key={`search-${place.id}`} style={styles.searchResultItem} onPress={() => handleSelectFromSearch(place)}>
-                      <View style={styles.searchResultIcon}>
-                        <Ionicons name="location" size={16} color="#6B9E78" />
-                      </View>
-                      <View style={styles.searchResultTextContainer}>
-                        <Text style={styles.searchResultTitle}>
-                          <HighlightedText text={place.title} query={searchQuery} />
-                        </Text>
-                        <Text style={styles.searchResultAddress}>
-                          <HighlightedText text={place.address || ''} query={searchQuery} />
-                        </Text>
-                      </View>
-                      <QuietnessTag level={place.level} containerStyle={styles.levelPillMini} textStyle={styles.levelPillMiniText} />
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <Text style={styles.noResultsText}>No QuietSpaces found matching &quot;{searchQuery}&quot;</Text>
-                )}
-              </View>
-            )}
-          </ScrollView>
-        </Animated.View>
+        <SearchOverlay
+          fadeSearchAnim={fadeSearchAnim}
+          headerHeight={headerHeight}
+          isSearchActive={isSearchActive}
+          searchQuery={searchQuery}
+          searchResults={searchResults}
+          recommendedPlaces={recommendedPlaces}
+          onSelectPlace={handleSelectFromSearch}
+        />
 
-        {/* Floating Action/Filter Bar & Legend */}
-        <Animated.View style={[styles.floatingContainer, { opacity: fadeSearchAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]} pointerEvents={isSearchActive ? "none" : "box-none"}>
-          
-          <View style={styles.actionsLeft} pointerEvents="box-none">
-            <TouchableOpacity 
-              style={styles.filterButton} 
-              activeOpacity={0.8}
-              onPress={() => {
-                setShowFilters(!showFilters);
-                setSelectedPlace(null);
-              }}
-            >
-              <Ionicons name="options" size={16} color="#ffffff" />
-              <Text style={styles.filterText}>Filters</Text>
-            </TouchableOpacity>
-
-            {/* Filter Modal Overlay */}
-            {isFilterModalMounted && (
-              <Animated.View
-                pointerEvents={showFilters ? 'auto' : 'none'}
-                style={[
-                  styles.filterModal,
-                  {
-                    opacity: filterModalAnim,
-                    transform: [
-                      {
-                        translateY: filterModalAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [-8, 0],
-                        }),
-                      },
-                      {
-                        scale: filterModalAnim.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [0.96, 1],
-                        }),
-                      },
-                    ],
-                  },
-                ]}
-              >
-                <TouchableOpacity style={styles.closeIcon} onPress={() => setShowFilters(false)}>
-                  <Ionicons name="close" size={20} color="#555" />
-                </TouchableOpacity>
-                
-                {/* Section: Quietness Level */}
-                <View style={styles.filterSection}>
-                  <View style={[styles.filterLabelPill, { backgroundColor: '#E8F5E9' }]}>
-                    <View style={styles.filterLabelContent}>
-                      <Ionicons name="volume-mute" size={14} color="#2E7D32" />
-                      <Text style={[styles.filterLabelText, { color: '#2E7D32' }]}>Quietness level</Text>
-                    </View>
-                  </View>
-                  <View style={styles.chipRow}>
-                    {['Noisy', 'Moderate', 'Quiet'].map(level => {
-                      const isActive = selectedLevels.includes(level);
-                      return (
-                        <TouchableOpacity 
-                          key={level} 
-                          style={[styles.chip, isActive && styles.chipActive]}
-                          onPress={() => toggleLevel(level)}
-                        >
-                          <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{level}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                {/* Section: Amenities */}
-                <View style={styles.filterSection}>
-                  <View style={[styles.filterLabelPill, { backgroundColor: '#f6e8fe' }]}>
-                    <View style={styles.filterLabelContent}>
-                      <Ionicons name="construct" size={14} color="#6b457f" />
-                      <Text style={[styles.filterLabelText, { color: '#6b457f' }]}>Amenities</Text>
-                    </View>
-                  </View>
-                  <View style={styles.chipRow}>
-                    {['Outlets', 'Wi-Fi', 'Coffee', 'Study rooms'].map(amenity => {
-                      const isActive = selectedAmenities.includes(amenity);
-                      return (
-                        <TouchableOpacity 
-                          key={amenity} 
-                          style={[styles.chip, isActive && styles.chipActive]}
-                          onPress={() => toggleAmenity(amenity)}
-                        >
-                          <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{amenity}</Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                {/* Section: Max Distance */}
-                <View style={styles.filterSection}>
-                  <View style={[styles.filterLabelPill, { backgroundColor: '#F0F4C3' }]}>
-                    <View style={styles.filterLabelContent}>
-                      <Ionicons name="resize" size={14} color="#827717" />
-                      <Text style={[styles.filterLabelText, { color: '#827717' }]}>Max Distance</Text>
-                    </View>
-                  </View>
-                  <Text style={styles.distanceValue}>{maxDistance.toFixed(1)} km</Text>
-                  <Slider
-                    style={{ width: '100%', height: 40 }}
-                    minimumValue={0.1}
-                    maximumValue={5}
-                    step={0.1}
-                    value={maxDistance}
-                    onValueChange={(val) => setMaxDistance(val)}
-                    minimumTrackTintColor="#6B9E78"
-                    maximumTrackTintColor="#E0E0E0"
-                    thumbTintColor="#6B9E78"
-                  />
-                  <View style={styles.sliderLabels}>
-                    <Text style={styles.sliderLabelText}>100m</Text>
-                    <Text style={styles.sliderLabelText}>5km</Text>
-                  </View>
-                </View>
-              </Animated.View>
-            )}
-          </View>
-
-          {/* Legend Card */}
-          <View style={[styles.legendCard, showFilters && styles.legendCardHidden]} pointerEvents="none">
-            <Text style={styles.legendTitle}>Quietness level</Text>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendIndicator, { backgroundColor: '#6B9E78' }]} />
-              <Text style={styles.legendLabel}>Quiet</Text>
-            </View>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendIndicator, { backgroundColor: '#F0B361' }]} />
-              <Text style={styles.legendLabel}>Moderate</Text>
-            </View>
-            
-            <View style={styles.legendItem}>
-              <View style={[styles.legendIndicator, { backgroundColor: '#F47C7C' }]} />
-              <Text style={styles.legendLabel}>Noisy</Text>
-            </View>
-          </View>
-
-        </Animated.View>
+        <FilterModal
+          fadeSearchAnim={fadeSearchAnim}
+          isSearchActive={isSearchActive}
+          showFilters={showFilters}
+          isFilterModalMounted={isFilterModalMounted}
+          filterModalAnim={filterModalAnim}
+          selectedLevels={selectedLevels}
+          selectedAmenities={selectedAmenities}
+          maxDistance={maxDistance}
+          onToggleFilters={() => {
+            setShowFilters(!showFilters);
+            setSelectedPlace(null);
+          }}
+          onCloseFilters={() => setShowFilters(false)}
+          onToggleLevel={toggleLevel}
+          onToggleAmenity={toggleAmenity}
+          onMaxDistanceChange={setMaxDistance}
+        />
 
         {/* Empty State Overlay Toast */}
         <Animated.View style={[styles.emptyToast, { opacity: fadeAnim }]} pointerEvents="none">
@@ -846,183 +603,50 @@ export default function MapScreen() {
           <Text style={styles.emptyToastText}>No spots found in this range. Try increasing the distance.</Text>
         </Animated.View>
 
-        {/* Location Info Panel (Bottom Sheet) */}
-        {selectedPlace && (
-          <Animated.View 
-            style={[
-              styles.bottomSheet, 
-              { transform: [{ translateY: sheetY }] }
-            ]} 
-            pointerEvents="box-none"
-            {...panResponder.panHandlers}
-          >
-            <View style={styles.sheetContent}>
-              <TouchableOpacity activeOpacity={1} style={styles.dragHandleTouchArea} onPress={() => {
-                // Tap to cycle sheet state
-                let next = currentSheetState.current + 1;
-                if (next > SheetState.EXPANDED) next = SheetState.COLLAPSED;
-                animateToState(next);
-              }}>
-                <View style={styles.dragHandle} />
-              </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.closeSheetIcon} onPress={() => {
-                setSelectedPlace(null);
-                setRoutePolyline([]);
-                setSelectedTravelMode(null);
-              }}>
-                <Ionicons name="close" size={22} color="#555" />
-              </TouchableOpacity>
+        <LocationInfoPanel
+          selectedPlace={selectedPlace}
+          selectedTravelMode={selectedTravelMode}
+          sheetY={sheetY}
+          panHandlers={panResponder.panHandlers}
+          onCycleSheetState={() => {
+            let next = currentSheetState.current + 1;
+            if (next > SheetState.EXPANDED) next = SheetState.COLLAPSED;
+            animateToState(next);
+          }}
+          onClose={() => {
+            setSelectedPlace(null);
+            setRoutePolyline([]);
+            setSelectedTravelMode(null);
+          }}
+          onSelectTravelMode={(mode) => {
+            setSelectedTravelMode(mode);
+            fetchDirections(selectedPlace, mode);
+          }}
+          onStartNavigation={() => {
+            if (selectedTravelMode && selectedPlace) {
+              let mode = 'driving';
+              if (selectedTravelMode === 'Walk') mode = 'walking';
+              else if (selectedTravelMode === 'Bike') mode = 'bicycling';
+              else if (selectedTravelMode === 'Transit') mode = 'transit';
 
-              <View style={styles.sheetRow}>
-                <View style={styles.sheetHeaderLeft}>
-                  <Text style={styles.sheetTitle}>{selectedPlace.title}</Text>
-                  <View style={styles.addressRow}>
-                    <Ionicons name="location" size={14} color="#A01D21" />
-                    <Text style={styles.addressText}>{selectedPlace.address}</Text>
-                  </View>
-                  <View style={styles.statusRow}>
-                    <Text style={styles.statusTextOpen}>
-                      {(selectedPlace.status).split(' • ')[0]}
-                    </Text>
-                      <Text style={styles.statusTextHours}>
-                        {' • ' + selectedPlace.status.split(' • ')[1]}
-                      </Text>
-                  </View>
-                </View>
+              const url = `https://www.google.com/maps/dir/?api=1&origin=${CURRENT_LOCATION.latitude},${CURRENT_LOCATION.longitude}&destination=${selectedPlace.coord.latitude},${selectedPlace.coord.longitude}&travelmode=${mode}`;
+              Linking.openURL(url);
+            }
+          }}
+        />
 
-                {/* Level Tag Top Right */}
-                <QuietnessTag level={selectedPlace.level} containerStyle={styles.levelTag} textStyle={styles.levelTagText} iconSize={14} />
-              </View>
-
-              {/* Quietness Level Bar */}
-              <Text style={styles.sectionHeading}>Quietness Level</Text>
-              <View style={styles.levelBarContainer}>
-                {[1, 2, 3, 4, 5].map((segment) => (
-                  <View 
-                    key={segment} 
-                    style={[
-                      styles.levelSegment, 
-                      { 
-                        backgroundColor: segment <= (selectedPlace.score || 3) 
-                          ? (selectedPlace.level === 'Quiet' ? '#6B9E78' : selectedPlace.level === 'Moderate' ? '#F0B361' : '#F47C7C') 
-                          : (selectedPlace.level === 'Quiet' ? '#DCE9E0' : selectedPlace.level === 'Moderate' ? '#FFE8C4' : '#FCD0D0')
-                      }
-                    ]} 
-                  />
-                ))}
-              </View>
-
-              {/* Feature Tags */}
-              {selectedPlace.features && (
-                <View style={styles.featuresContainer}>
-                  {selectedPlace.features.map((feat: any, idx: number) => (
-                    <View key={idx} style={[styles.featurePill, { backgroundColor: feat.color }]}>
-                      <Text style={styles.featureText}>{feat.label}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-
-              {/* ETA Cards */}
-              {selectedPlace.etas && (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.etaScroll}>
-                  {selectedPlace.etas.map((eta: any, idx: number) => {
-                    // Update active state based on selected travel mode
-                    const isActive = selectedTravelMode === eta.mode;
-                    return (
-                      <TouchableOpacity 
-                        key={idx} 
-                        activeOpacity={0.7}
-                        onPress={() => {
-                          setSelectedTravelMode(eta.mode);
-                          fetchDirections(selectedPlace, eta.mode);
-                        }}
-                        style={[styles.etaCard, isActive && styles.etaCardActive]}
-                      >
-                        <Text style={styles.etaIcon}>{eta.icon}</Text>
-                        <Text style={[styles.etaTime, isActive && styles.etaTextActive]}>{eta.time}</Text>
-                        <Text style={styles.etaDist}>{eta.dist}</Text>
-                        <Text style={styles.etaMode}>{eta.mode}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </ScrollView>
-              )}
-
-              {/* Primary Action Button */}
-              <TouchableOpacity 
-                style={[styles.navButton, !selectedTravelMode && styles.navButtonDisabled]} 
-                activeOpacity={0.8} 
-                disabled={!selectedTravelMode}
-                onPress={() => {
-                  if (selectedTravelMode && selectedPlace) {
-                    let mode = 'driving';
-                    if (selectedTravelMode === 'Walk') mode = 'walking';
-                    else if (selectedTravelMode === 'Bike') mode = 'bicycling';
-                    else if (selectedTravelMode === 'Transit') mode = 'transit';
-
-                    const url = `https://www.google.com/maps/dir/?api=1&origin=${CURRENT_LOCATION.latitude},${CURRENT_LOCATION.longitude}&destination=${selectedPlace.coord.latitude},${selectedPlace.coord.longitude}&travelmode=${mode}`;
-                    Linking.openURL(url);
-                  }
-                }}
-              >
-                <Ionicons name="navigate-outline" size={20} color={!selectedTravelMode ? "#a0a0a0" : "#ffffff"} />
-                <Text style={[styles.navButtonText, !selectedTravelMode && styles.navButtonTextDisabled]}>Start Navigation</Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        )}
-
-        {/* Places List Panel (Bottom Sheet Drawer when no place is selected) */}
         {!selectedPlace && !isSearchActive && (
-          <Animated.View 
-            style={[
-              styles.bottomSheet, 
-              { transform: [{ translateY: listSheetY }] }
-            ]} 
-            pointerEvents="box-none"
-          >
-            <View style={[styles.sheetContent, { backgroundColor: '#f5f5f5', paddingHorizontal: 0 }]} {...panResponderList.panHandlers}>
-              <TouchableOpacity activeOpacity={1} style={styles.dragHandleTouchAreaList} onPress={() => {
-                let next = currentListSheetState.current + 1;
-                if (next > SheetState.EXPANDED) next = SheetState.COLLAPSED;
-                animateListToState(next);
-              }}>
-                <View style={styles.dragHandle} />
-              </TouchableOpacity>
-
-              <ScrollView 
-                contentContainerStyle={styles.listSheetContent}
-                showsVerticalScrollIndicator={false}
-                scrollEnabled={true}
-              >
-                {filteredPlaces.map(place => (
-                  <TouchableOpacity key={`listsheet-${place.id}`} style={styles.listCard} activeOpacity={0.8} onPress={() => setSelectedPlace(place)}>
-                    <View style={styles.listCardTopRow}>
-                      <Text style={styles.listCardTitle}>{place.title}</Text>
-                      {/* Pill style matching screenshot */}
-                      <QuietnessTag level={place.level} containerStyle={styles.listLevelPill} textStyle={styles.listLevelPillText} />
-                    </View>
-                    <View style={styles.listCardAddressRow}>
-                      <Ionicons name="location" size={14} color="#A01D21" style={{ marginRight: 4 }} />
-                      <Text style={styles.listCardAddressText}>{place.address}</Text>
-                    </View>
-                    <View style={styles.listCardStatusRow}>
-                      <Text style={styles.listCardStatusOpen}>
-                        {(place.status || 'Open').split(' • ')[0]}
-                      </Text>
-                      {(place.status || '').includes(' • ') && (
-                        <Text style={styles.listCardStatusHours}>
-                          {' • ' + place.status.split(' • ')[1]}
-                        </Text>
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </Animated.View>
+          <PlaceListSheet
+            listSheetY={listSheetY}
+            panHandlers={panResponderList.panHandlers}
+            filteredPlaces={filteredPlaces}
+            onCycleSheetState={() => {
+              let next = currentListSheetState.current + 1;
+              if (next > SheetState.EXPANDED) next = SheetState.COLLAPSED;
+              animateListToState(next);
+            }}
+            onSelectPlace={setSelectedPlace}
+          />
         )}
 
       </View>
@@ -1038,298 +662,6 @@ const styles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
-  header: {
-    backgroundColor: '#6B9E78',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
-    zIndex: 10,
-  },
-  headerTitle: {
-    color: '#ffffff',
-    fontSize: 28,
-    fontWeight: '800',
-    fontFamily: 'Nunito_800ExtraBold',
-    marginBottom: 16,
-    letterSpacing: 0.5,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 10,
-    fontSize: 16,
-    color: '#333333',
-    fontFamily: 'Nunito_400Regular',
-  },
-  
-  // SEARCH OVERLAY STYLES
-  searchOverlay: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#FAFAFA',
-    zIndex: 9,
-  },
-  searchScrollContent: {
-    padding: 20,
-    paddingBottom: 100,
-  },
-  recommendationSection: {
-    marginBottom: 20,
-  },
-  searchResultsSection: {
-    marginBottom: 20,
-  },
-  sectionHeadingText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 16,
-    fontFamily: 'Nunito_700Bold',
-  },
-  searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 2,
-  },
-  searchResultIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  searchResultTextContainer: {
-    flex: 1,
-    marginRight: 8,
-  },
-  searchResultTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 4,
-    fontFamily: 'Nunito_700Bold',
-  },
-  searchResultAddress: {
-    fontSize: 12,
-    color: '#777',
-    fontFamily: 'Nunito_400Regular',
-  },
-  levelPillMini: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  levelPillMiniText: {
-    fontSize: 10,
-    fontWeight: '700',
-    fontFamily: 'Nunito_700Bold',
-  },
-  noResultsText: {
-    textAlign: 'center',
-    marginTop: 40,
-    color: '#777',
-    fontSize: 14,
-    fontFamily: 'Nunito_500Medium',
-  },
-
-  floatingContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    zIndex: 5,
-  },
-  actionsLeft: {
-    alignItems: 'flex-start',
-  },
-  filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#4A7A56',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  filterText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 15,
-    marginLeft: 6,
-    fontFamily: 'Nunito_600SemiBold',
-  },
-
-  // FILTER MODAL STYLES
-  filterModal: {
-    position: 'relative',
-    zIndex: 20,
-    backgroundColor: '#ffffff',
-    marginTop: 12,
-    borderRadius: 20,
-    padding: 16,
-    width: 260,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 8,
-  },
-  closeIcon: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    zIndex: 2,
-    padding: 4,
-  },
-  filterSection: {
-    marginBottom: 16,
-  },
-  filterLabelPill: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    marginBottom: 8,
-  },
-  filterLabelContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  filterLabelText: {
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: 'Nunito_700Bold',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  chip: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
-  chipActive: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#6B9E78',
-    borderWidth: 1,
-    paddingHorizontal: 13,
-    paddingVertical: 7,
-  },
-  chipText: {
-    fontSize: 12,
-    color: '#555',
-    fontWeight: '500',
-    fontFamily: 'Nunito_500Medium',
-  },
-  chipTextActive: {
-    color: '#2E7D32',
-    fontWeight: '600',
-    fontFamily: 'Nunito_600SemiBold',
-  },
-  distanceValue: {
-    position: 'absolute',
-    right: 0,
-    top: 6,
-    fontSize: 13,
-    color: '#333',
-    fontWeight: '700',
-    fontFamily: 'Nunito_700Bold',
-  },
-  sliderLabels: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  sliderLabelText: {
-    fontSize: 10,
-    color: '#888',
-    fontWeight: '600',
-    fontFamily: 'Nunito_600SemiBold',
-  },
-
-  // LEGEND STYLES
-  legendCard: {
-    position: 'absolute',
-    right: 16,
-    top: 16,
-    zIndex: 1,
-    backgroundColor: '#ffffff',
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  legendCardHidden: {
-    opacity: 0.28,
-  },
-  legendTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#333333',
-    marginBottom: 6,
-    fontFamily: 'Nunito_700Bold',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  legendIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginRight: 6,
-  },
-  legendLabel: {
-    fontSize: 11,
-    color: '#555555',
-    fontWeight: '600',
-    fontFamily: 'Nunito_600SemiBold',
-  },
-
   // EMPTY STATE TOAST
   emptyToast: {
     position: 'absolute',
@@ -1358,42 +690,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Nunito_600SemiBold',
   },
 
-  // CUSTOM MARKER STYLES
-  customMarkerContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 4,
-  },
-  customMarkerPin: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  customMarkerDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#ffffff',
-  },
-  customMarkerTriangle: {
-    width: 0,
-    height: 0,
-    backgroundColor: 'transparent',
-    borderStyle: 'solid',
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 10,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    marginTop: -2, 
-  },
-
   userLocationDotBorder: {
     width: 28,
     height: 28,
@@ -1414,278 +710,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 4,
-  },
-
-  // BOTTOM SHEET STYLES
-  bottomSheet: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: SCREEN_HEIGHT * 1.5,
-    zIndex: 20,
-  },
-  sheetContent: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    padding: 24,
-    paddingTop: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 10,
-  },
-  dragHandleTouchArea: {
-    alignItems: 'center',
-    paddingVertical: 12,
-    marginBottom: 4,
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    backgroundColor: '#E0E0E0',
-    borderRadius: 2,
-  },
-  closeSheetIcon: {
-    position: 'absolute',
-    top: 16,
-    right: 20,
-    padding: 4,
-  },
-  sheetRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    paddingRight: 24, // spacing to avoid overlap with 'x'
-  },
-  sheetHeaderLeft: {
-    flex: 1,
-  },
-  sheetTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#333',
-    marginBottom: 4,
-    fontFamily: 'Nunito_800ExtraBold',
-  },
-  addressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  addressText: {
-    fontSize: 14,
-    color: '#777',
-    marginLeft: 4,
-    fontFamily: 'Nunito_400Regular',
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  statusTextOpen: {
-    fontSize: 14,
-    color: '#6B9E78', // matching primary green
-    fontWeight: '600',
-    fontFamily: 'Nunito_600SemiBold',
-  },
-  statusTextHours: {
-    fontSize: 14,
-    color: '#777',
-    fontWeight: '500',
-    fontFamily: 'Nunito_500Medium',
-  },
-  levelTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  levelTagText: {
-    fontSize: 13,
-    fontWeight: '700',
-    fontFamily: 'Nunito_700Bold',
-  },
-  sectionHeading: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-    fontFamily: 'Nunito_600SemiBold',
-  },
-  levelBarContainer: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 16,
-  },
-  levelSegment: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-  },
-  featuresContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
-  },
-  featurePill: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  featureText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#333',
-    fontFamily: 'Nunito_600SemiBold',
-  },
-  etaScroll: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    maxHeight: 100, // Keep scroll contained
-  },
-  etaCard: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginRight: 10,
-    minWidth: 70,
-  },
-  etaCardActive: {
-    backgroundColor: '#E8F5E9',
-    borderColor: '#6B9E78',
-  },
-  etaIcon: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-  etaTime: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#333',
-    fontFamily: 'Nunito_700Bold',
-  },
-  etaTextActive: {
-    color: '#2E7D32',
-  },
-  etaDist: {
-    fontSize: 11,
-    color: '#777',
-    marginTop: 2,
-    fontFamily: 'Nunito_400Regular',
-  },
-  etaMode: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#444',
-    marginTop: 4,
-    fontFamily: 'Nunito_600SemiBold',
-  },
-  navButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#6B9E78',
-    paddingVertical: 16,
-    borderRadius: 16,
-  },
-  navButtonDisabled: {
-    backgroundColor: '#E0E0E0',
-  },
-  navButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '700',
-    marginLeft: 8,
-    fontFamily: 'Nunito_700Bold',
-  },
-  navButtonTextDisabled: {
-    color: '#a0a0a0',
-  },
-  
-  // LIST DRAWER STYLES
-  dragHandleTouchAreaList: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  listSheetContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 150,
-  },
-  listCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  listCardTopRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  listCardTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#1a1a1a',
-    flex: 1,
-    fontFamily: 'Nunito_700Bold',
-  },
-  listLevelPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginLeft: 8,
-  },
-  listLevelPillText: {
-    fontSize: 12,
-    fontWeight: '600',
-    fontFamily: 'Nunito_600SemiBold',
-  },
-  listCardAddressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  listCardAddressText: {
-    fontSize: 13,
-    color: '#666',
-    fontWeight: '500',
-    fontFamily: 'Nunito_500Medium',
-  },
-  listCardStatusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  listCardStatusOpen: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#2E7D32', // Green
-    fontFamily: 'Nunito_700Bold',
-  },
-  listCardStatusHours: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#666',
-    fontFamily: 'Nunito_500Medium',
   }
 });
