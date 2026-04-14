@@ -11,11 +11,13 @@ type FilterModalProps = {
   filterModalAnim: Animated.Value;
   selectedLevels: string[];
   selectedAmenities: string[];
+  selectedCrowdDensities: string[];
   maxDistance: number;
   onToggleFilters: () => void;
   onCloseFilters: () => void;
   onToggleLevel: (level: string) => void;
   onToggleAmenity: (amenity: string) => void;
+  onToggleCrowdDensity: (density: string) => void;
   onMaxDistanceChange: (value: number) => void;
 };
 
@@ -27,11 +29,13 @@ export function FilterModal({
   filterModalAnim,
   selectedLevels,
   selectedAmenities,
+  selectedCrowdDensities,
   maxDistance,
   onToggleFilters,
   onCloseFilters,
   onToggleLevel,
   onToggleAmenity,
+  onToggleCrowdDensity,
   onMaxDistanceChange,
 }: FilterModalProps) {
   return (
@@ -112,6 +116,29 @@ export function FilterModal({
                       onPress={() => onToggleAmenity(amenity)}
                     >
                       <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{amenity}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.filterSection}>
+              <View style={[styles.filterLabelPill, { backgroundColor: '#E3F2FD' }]}>
+                <View style={styles.filterLabelContent}>
+                  <Ionicons name="people" size={14} color="#1565C0" />
+                  <Text style={[styles.filterLabelText, { color: '#1565C0' }]}>Crowd density</Text>
+                </View>
+              </View>
+              <View style={styles.chipRow}>
+                {['Low', 'Moderate', 'High'].map((density) => {
+                  const isActive = selectedCrowdDensities.includes(density);
+                  return (
+                    <TouchableOpacity
+                      key={density}
+                      style={[styles.chip, isActive && styles.chipActive]}
+                      onPress={() => onToggleCrowdDensity(density)}
+                    >
+                      <Text style={[styles.chipText, isActive && styles.chipTextActive]}>{density}</Text>
                     </TouchableOpacity>
                   );
                 })}

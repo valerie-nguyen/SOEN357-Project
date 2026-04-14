@@ -225,6 +225,7 @@ export default function MapScreen() {
 
   const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
+  const [selectedCrowdDensities, setSelectedCrowdDensities] = useState<string[]>([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const fadeSearchAnim = useRef(new Animated.Value(0)).current;
@@ -273,6 +274,21 @@ export default function MapScreen() {
     setSelectedAmenities(prev => 
       prev.includes(amenity) ? prev.filter(a => a !== amenity) : [...prev, amenity]
     );
+  };
+
+  const toggleCrowdDensity = (density: string) => {
+    setSelectedCrowdDensities(prev =>
+      prev.includes(density) ? prev.filter(d => d !== density) : [...prev, density]
+    );
+  };
+
+  const getCrowdDensity = (place: any) => {
+    const crowdTag = place.features?.find((f: any) => typeof f.label === 'string' && f.label.includes('👥'))?.label?.toLowerCase();
+    if (!crowdTag) return null;
+    if (crowdTag.includes('low')) return 'Low';
+    if (crowdTag.includes('moderate')) return 'Moderate';
+    if (crowdTag.includes('high')) return 'High';
+    return null;
   };
 
   const handleSelectFromSearch = (place: any) => {
@@ -417,9 +433,14 @@ export default function MapScreen() {
         place.features?.some((f: any) => f.label.toLowerCase() === amenity.toLowerCase())
       );
 
-      return inDistance && inLevel && inAmenities;
+      const crowdDensity = getCrowdDensity(place);
+      const inCrowdDensity =
+        selectedCrowdDensities.length === 0 ||
+        (crowdDensity !== null && selectedCrowdDensities.includes(crowdDensity));
+
+      return inDistance && inLevel && inAmenities && inCrowdDensity;
     });
-  }, [maxDistance, selectedLevels, selectedAmenities]);
+  }, [maxDistance, selectedLevels, selectedAmenities, selectedCrowdDensities]);
 
   // Effect to automatically close bottom sheet if selected place is filtered out
   useEffect(() => {
@@ -586,6 +607,7 @@ export default function MapScreen() {
           filterModalAnim={filterModalAnim}
           selectedLevels={selectedLevels}
           selectedAmenities={selectedAmenities}
+          selectedCrowdDensities={selectedCrowdDensities}
           maxDistance={maxDistance}
           onToggleFilters={() => {
             setShowFilters(!showFilters);
@@ -594,6 +616,7 @@ export default function MapScreen() {
           onCloseFilters={() => setShowFilters(false)}
           onToggleLevel={toggleLevel}
           onToggleAmenity={toggleAmenity}
+          onToggleCrowdDensity={toggleCrowdDensity}
           onMaxDistanceChange={setMaxDistance}
         />
 
