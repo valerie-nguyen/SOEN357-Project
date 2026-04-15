@@ -16,9 +16,10 @@ type CustomStudyMarkerProps = {
   place: MarkerPlace;
   onPress: (event: any) => void;
   color: string;
+  isSelected?: boolean;
 };
 
-export function CustomStudyMarker({ place, onPress, color }: CustomStudyMarkerProps) {
+export function CustomStudyMarker({ place, onPress, color, isSelected }: CustomStudyMarkerProps) {
   const [tracksViewChanges, setTracksViewChanges] = useState(true);
 
   useEffect(() => {
@@ -34,8 +35,10 @@ export function CustomStudyMarker({ place, onPress, color }: CustomStudyMarkerPr
       description={`${place.level} Zone`}
       tracksViewChanges={tracksViewChanges}
       onPress={onPress}
+      zIndex={isSelected ? 200 : 1}
     >
       <View style={styles.customMarkerContainer}>
+        {isSelected && <View style={styles.highlight} />}
         <View style={[styles.customMarkerPin, { backgroundColor: color }]}>
           <View style={styles.customMarkerDot} />
         </View>
@@ -79,5 +82,15 @@ const styles = StyleSheet.create({
     borderLeftColor: 'transparent',
     borderRightColor: 'transparent',
     marginTop: -2,
+  },
+  highlight: {
+    position: 'absolute',
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 3,
+    borderColor: '#FFD700',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    zIndex: -1,
   },
 });
